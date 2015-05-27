@@ -8,7 +8,7 @@ use Acme\Commander\Responder;
 $responder = new Responder();
 
 while ($line = fgets(STDIN)) {
-  echo implode("\n", $responder->consider($line)->speak()) . "\n";
+  echo implode("\n", $responder->consider($line)->act()) . "\n";
 }
 
 

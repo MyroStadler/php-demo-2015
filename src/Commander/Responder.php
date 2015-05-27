@@ -28,13 +28,19 @@ class Responder
     }
     $this->follow = array(
         'hello' => array('how are you?'),
-        'goodbye' => (function($root) { exit(); })
+        'goodbye' => 
+            function ($root=null)
+            {
+              if (php_sapi_name() == 'cli') {
+                exit(); 
+              }
+            }
     );
   }
   
   public $speech = array();
   
-  public function speak() 
+  public function act() 
   {
     return array_splice($this->speech, 0, count($this->speech));
   }
@@ -74,7 +80,7 @@ class Responder
       $synonyms = $this->synonyms['random'];
     }
     if (isset($synonyms)) {
-      $this->speech[] = $synonyms[array_rand($synonyms)];
+      $this->addRandomToSpeech($synonyms);
     }
     if (array_key_exists($root, $this->follow)){
       $follows = $this->follow[$root];
@@ -82,8 +88,14 @@ class Responder
         $follows($root);
       }else{
         // assume array
-        $this->speech[] = $follows[array_rand($follows)];
+        $this->addRandomToSpeech($follows);
       }
     }
+  }
+  
+  // PRIVATE
+  private function addRandomToSpeech($options) 
+  {
+    $this->speech[] = $options[array_rand($options)];
   }
 }
