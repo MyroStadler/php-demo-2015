@@ -13,6 +13,7 @@ Symfony EventDispatcher is used. Packages are managed using composer. Composer a
 ### running
 
 $ cd [?]/app
+
 $ php commander.php
 
 ### description
@@ -29,9 +30,11 @@ Commander is a simple CLI responder. It know hello, how are you? and goodbye.
 ### running
 
 $ cd [?]/app
+
 $ php -S 127.0.0.1:8080
 
 Then open in a browser the url:
+
 http://127.0.0.1:8080/combo.php
 
 ### description
