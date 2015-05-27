@@ -41,7 +41,7 @@ class Responder implements iResponder
       },
       'goodbye' => function() use ($self, $dispatcher) {
         $self->say('goodbye')->dispatchSayBuffer();
-        $dispatcher->dispatch('Acme\Commander.exit', new CommanderEvent());
+        $dispatcher->dispatch(CommanderEvent::QUIT, new CommanderEvent());
       },
       'how are you?' => function() use ($self, $dispatcher) {
         $self->say($self->random() >= 0.5 ? 'good' : 'bad')
@@ -112,7 +112,7 @@ class Responder implements iResponder
   private function dispatchSayBuffer() 
   {
     if (count($this->sayBuffer)) {
-      $this->dispatcher->dispatch('Acme\Commander.say', 
+      $this->dispatcher->dispatch(CommanderEvent::SAY, 
         new CommanderEvent($this->consumeArray($this->sayBuffer)));
     }
     return $this;

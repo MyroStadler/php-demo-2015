@@ -12,16 +12,15 @@ use \Symfony\Component\EventDispatcher\EventDispatcher;
 use Acme\Commander\Responder\Responder;
 use Acme\Commander\Event as CommanderEvent;
 
-
 $dispatcher = new EventDispatcher();
 
-$dispatcher->addListener('Acme\Commander.exit', function (CommanderEvent $e) {
+$dispatcher->addListener(CommanderEvent::QUIT, function (CommanderEvent $e) {
   if (php_sapi_name() == 'cli') {
     exit(); 
   }
 });
 
-$dispatcher->addListener('Acme\Commander.say', function (CommanderEvent $e) {
+$dispatcher->addListener(CommanderEvent::SAY, function (CommanderEvent $e) {
 	echo implode("\n", $e->data) . "\n";
 });
 

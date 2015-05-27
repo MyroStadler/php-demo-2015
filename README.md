@@ -36,6 +36,8 @@ http://127.0.0.1:8080/combo.php
 
 ### description
 
-Combo is a proof of a simple idea, to have PHP objects represent the dom, their toString writing html.
+Combo is a proof of a simple idea, to have PHP objects represent the dom, their toString writing html. 
+
+To be fully realised, we would abstract the html component nature, including attributes, before specialising the component. This is just a POC.
 
 
