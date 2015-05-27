@@ -1,6 +1,12 @@
 <?php
+/*
+* A simple responder. It understands hello, how are you? and goodbye.
+  It is moderately responsive when ignorant.
 
-$loader = require 'vendor/autoload.php';
+	$ cd .../app
+	$ php commander.php
+*/
+$loader = require '../vendor/autoload.php';
 
 use \Symfony\Component\EventDispatcher\EventDispatcher;
 use Acme\Commander\Responder\Responder;
