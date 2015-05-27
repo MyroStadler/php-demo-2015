@@ -3,7 +3,7 @@
 $loader = require 'vendor/autoload.php';
 
 use \Symfony\Component\EventDispatcher\EventDispatcher;
-use Acme\Commander\Responder;
+use Acme\Commander\Responder\Responder;
 use Acme\Commander\Event as CommanderEvent;
 
 

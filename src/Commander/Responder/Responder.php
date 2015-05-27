@@ -1,12 +1,16 @@
 <?php
 
-namespace Acme\Commander;
+namespace Acme\Commander\Responder;
 
 use Symfony\Component\EventDispatcher\EventDispatcher;
+use Acme\Utils\tArrayUtils;
 use Acme\Commander\Event as CommanderEvent;
 
-class Responder 
+class Responder implements iResponder
 {
+
+  use tArrayUtils; // array utils used here
+
   public $synonyms = array(
       'hello' => array('hi', 'hey', 'howzit', 'ahoy-hoy', 'hello'),
       'how are you?' => array('how are you?', 'you alright?', 'keeping well?', 
@@ -19,6 +23,7 @@ class Responder
   public $actBuffer = array();
   public $roots = null;
   public $actionsByRoot = null;
+  
   public function __construct(EventDispatcher $dispatcher) 
   {
     $this->dispatcher = $dispatcher;
@@ -38,8 +43,12 @@ class Responder
       );
     }
   }
-  
-  public $speech = array();
+
+
+
+  //*********************************************
+  // PUBLIC
+  //*********************************************  
   
   public function consider($input) 
   {
@@ -61,29 +70,11 @@ class Responder
     $this->dispatch();
     return $this;
   }
+  
 
-  private function dispatch() 
-  {
-    // say stuff that's been queued
-    if (count($this->sayBuffer)) {
-      $this->dispatcher->dispatch('Acme\Commander.say', 
-        new CommanderEvent($this->consumeArray($this->sayBuffer)));
-    }
-    // do stuff that's been queued, like dispatching events other than say
-    if (count($this->actBuffer)) {
-      $actions = $this->consumeArray($this->actBuffer);
-      foreach ($actions as $action) {
-        if (is_callable($action)) {
-          $action();
-        }
-      }
-    }
-  }
-
-  private function consumeArray(&$arr)
-  {
-    return array_splice($arr, 0, count($arr));
-  }
+  //*********************************************
+  // PRIVATE
+  //*********************************************
   
   private function act($root) 
   {
@@ -104,10 +95,22 @@ class Responder
       $this->addRandomTo($synonyms, $this->sayBuffer);
     }
   }
-  
-  // PRIVATE
-  private function addRandomTo($options, &$addTo) 
+
+  private function dispatch() 
   {
-    $addTo[] = $options[array_rand($options)];
+    // say stuff that's been queued
+    if (count($this->sayBuffer)) {
+      $this->dispatcher->dispatch('Acme\Commander.say', 
+        new CommanderEvent($this->consumeArray($this->sayBuffer)));
+    }
+    // do stuff that's been queued, like dispatching events other than say
+    if (count($this->actBuffer)) {
+      $actions = $this->consumeArray($this->actBuffer);
+      foreach ($actions as $action) {
+        if (is_callable($action)) {
+          $action();
+        }
+      }
+    }
   }
 }
