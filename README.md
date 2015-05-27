@@ -1,5 +1,11 @@
 # php-demo-2015
 
+### PHP version
+
+I used 5.6 for development, installed using homebrew.
+
+### Overview
+
 A demo of a simple php installation with Acme namespace set up.
 
 Symfony EventDispatcher is used. Packages are managed using composer. Composer autoloader is used.
