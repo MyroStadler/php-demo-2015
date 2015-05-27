@@ -1,14 +1,28 @@
 <?php
 
 $loader = require 'vendor/autoload.php';
-//$loader->add('Acme', __DIR__.'/src/');
 
+use \Symfony\Component\EventDispatcher\EventDispatcher;
 use Acme\Commander\Responder;
+use Acme\Commander\Event as CommanderEvent;
 
-$responder = new Responder();
+
+$dispatcher = new EventDispatcher();
+
+$dispatcher->addListener('Acme\Commander.exit', function (CommanderEvent $e) {
+  if (php_sapi_name() == 'cli') {
+    exit(); 
+  }
+});
+
+$dispatcher->addListener('Acme\Commander.say', function (CommanderEvent $e) {
+	echo implode("\n", $e->data) . "\n";
+});
+
+$responder = new Responder($dispatcher);
 
 while ($line = fgets(STDIN)) {
-  echo implode("\n", $responder->consider($line)->act()) . "\n";
+  $responder->consider($line);
 }
 
 

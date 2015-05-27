@@ -2,6 +2,9 @@
 
 namespace Acme\Commander;
 
+use Symfony\Component\EventDispatcher\EventDispatcher;
+use Acme\Commander\Event as CommanderEvent;
+
 class Responder 
 {
   public $synonyms = array(
@@ -12,10 +15,13 @@ class Responder
       'random' => array('ho hum', 'uh huh', 'yeah', 'yup', 'yu-uh', 'totally', 
           'c-c-c-combo breaker!')
   );
-  public $follow;
+  public $sayBuffer = array();
+  public $actBuffer = array();
   public $roots = null;
-  public function __construct() 
+  public $actionsByRoot = null;
+  public function __construct(EventDispatcher $dispatcher) 
   {
+    $this->dispatcher = $dispatcher;
     $this->roots = array();
     foreach ($this->synonyms as $root => $synonyms) {
       // write roots to themselves!
@@ -25,77 +31,83 @@ class Responder
         //  be clobbered by the second
         $this->roots[$synonym] = $root;
       }
+      $this->actionsByRoot = array(
+        'goodbye' => function() use ($dispatcher) {
+          $dispatcher->dispatch('Acme\Commander.exit', new CommanderEvent());
+        }
+      );
     }
-    $this->follow = array(
-        'hello' => array('how are you?'),
-        'goodbye' => 
-            function ($root=null)
-            {
-              if (php_sapi_name() == 'cli') {
-                exit(); 
-              }
-            }
-    );
   }
   
   public $speech = array();
   
-  public function act() 
-  {
-    return array_splice($this->speech, 0, count($this->speech));
-  }
-  
   public function consider($input) 
   {
     $key = strtolower(trim($input));
-    switch ($key) {
-      // this is to show you can control from here if you want
-      //  not just by adding to synonyms
-      case 'hey':
-      case 'hi':
-      case 'good day':
-      case 'good morning':
-      case 'good afternoon':
-      case 'good evening':
-      case 'hello':
-        $this->say('hello');
-        break;
-      default:
-        // check synonyms if no direct match
-        if (array_key_exists($key, $this->roots)) {
-          $this->say($this->roots[$key]);
-        }else{
-          $this->say('random');
-        }
-        break;
+    // actions to take?
+    // response to say?
+    if (array_key_exists($key, $this->roots)) {
+      $root = $this->roots[$key];
+      // actions are parsed only for roots that exost.
+      // if you dont want to say anything include an empty string as the only synonym for that root
+      if (array_key_exists($root, $this->actionsByRoot)) {
+        $this->act($root);
+      }
+      $this->say($root);
+    } else {
+      $this->say('random');
     }
+    // now that we know what our resulting performances are, dispatch them with actions last
+    $this->dispatch();
     return $this;
   }
-  
-  public function say($root) 
+
+  private function dispatch() 
   {
+    // say stuff that's been queued
+    if (count($this->sayBuffer)) {
+      $this->dispatcher->dispatch('Acme\Commander.say', 
+        new CommanderEvent($this->consumeArray($this->sayBuffer)));
+    }
+    // do stuff that's been queued, like dispatching events other than say
+    if (count($this->actBuffer)) {
+      $actions = $this->consumeArray($this->actBuffer);
+      foreach ($actions as $action) {
+        if (is_callable($action)) {
+          $action();
+        }
+      }
+    }
+  }
+
+  private function consumeArray(&$arr)
+  {
+    return array_splice($arr, 0, count($arr));
+  }
+  
+  private function act($root) 
+  {
+    $this->actBuffer[] = $this->actionsByRoot[$root];
+  }  
+
+  private function say($root) 
+  {
+    if (trim($root) == '') {
+      return;
+    }
     if (array_key_exists($root, $this->synonyms)){
       $synonyms = $this->synonyms[$root];
     } else {
       $synonyms = $this->synonyms['random'];
     }
     if (isset($synonyms)) {
-      $this->addRandomToSpeech($synonyms);
-    }
-    if (array_key_exists($root, $this->follow)){
-      $follows = $this->follow[$root];
-      if(is_callable($follows)){
-        $follows($root);
-      }else{
-        // assume array
-        $this->addRandomToSpeech($follows);
-      }
+      $this->addRandomTo($synonyms, $this->sayBuffer);
     }
   }
   
   // PRIVATE
-  private function addRandomToSpeech($options) 
+  private function addRandomTo($options, &$addTo) 
   {
-    $this->speech[] = $options[array_rand($options)];
+    $addTo[] = $options[array_rand($options)];
   }
 }
