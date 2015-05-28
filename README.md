@@ -24,7 +24,7 @@ $ php commander.php
 
 ### description
 
-Commander is a simple CLI responder. It know hello, how are you? and goodbye.
+Commander is an ultra simple CLI responder. It knows hello, how are you? and goodbye (and their most common synonyms).
 
 
 
